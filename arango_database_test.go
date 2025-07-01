@@ -39,7 +39,6 @@ type ArangoDatabaseTestSuite struct {
 }
 
 func (suite *ArangoDatabaseTestSuite) SetupSuite() {
-	serviceloader.Register(1, &security.TenantContextObject{})
 	serviceloader.Register(1, &security.DummyToken{})
 
 	StartMockServer()

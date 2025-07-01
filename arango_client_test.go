@@ -26,7 +26,6 @@ type ArangoClientTestSuite struct {
 }
 
 func (suite *ArangoClientTestSuite) SetupSuite() {
-	serviceloader.Register(1, &security.TenantContextObject{})
 	serviceloader.Register(1, &security.DummyToken{})
 	os.Setenv(propMicroserviceName, "test_service")
 	os.Setenv(namespaceEnvName, "test_space")
