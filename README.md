@@ -27,7 +27,7 @@ To get ArangoDB DBaaS Go Client do:
     go get github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client
 ```
 
-List of all released versions may be found [here](https://github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/-/tags)
+List of all released versions may be found [here](https://github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/tags)
 
 ## Usage
 
