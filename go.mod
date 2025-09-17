@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	github.com/arangodb/go-driver/v2 v2.1.3
-	github.com/docker/go-connections v0.5.0
+	github.com/docker/go-connections v0.6.0
 	github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3 v3.0.2
 	github.com/netcracker/qubership-core-lib-go/v3 v3.1.0
 	github.com/stretchr/testify v1.11.1
