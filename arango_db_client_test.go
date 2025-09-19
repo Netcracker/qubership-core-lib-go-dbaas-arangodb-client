@@ -8,16 +8,16 @@ import (
 	"testing"
 	"time"
 
-	constants "github.com/netcracker/qubership-core-lib-go/v3/const"
 	"github.com/arangodb/go-driver/v2/arangodb"
 	"github.com/arangodb/go-driver/v2/connection"
 	"github.com/docker/go-connections/nat"
-	"github.com/netcracker/qubership-core-lib-go/v3/configloader"
 	"github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/v4/model"
 	dbaasbase "github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3"
 	"github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3/cache"
 	basemodel "github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3/model"
 	"github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3/model/rest"
+	"github.com/netcracker/qubership-core-lib-go/v3/configloader"
+	constants "github.com/netcracker/qubership-core-lib-go/v3/const"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
@@ -237,13 +237,13 @@ func getRootClient(host string, port int) arangodb.Client {
 }
 
 func waitForDb(ctx context.Context, client arangodb.Client, dbName string, checkInterval time.Duration) error {
-	_, err := client.Database(ctx, dbName)
+	_, err := client.GetDatabase(ctx, dbName, nil)
 	for err != nil {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("%s:%w", ctx.Err(), err)
 		case <-time.After(checkInterval):
-			_, err = client.Database(ctx, dbName)
+			_, err = client.GetDatabase(ctx, dbName, nil)
 		}
 	}
 	return nil

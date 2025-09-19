@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/netcracker/qubership-core-lib-go/v3/utils"
 	"github.com/arangodb/go-driver/v2/arangodb"
 	"github.com/arangodb/go-driver/v2/arangodb/shared"
 	"github.com/arangodb/go-driver/v2/connection"
@@ -14,6 +13,7 @@ import (
 	"github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3/cache"
 	basemodel "github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3/model"
 	"github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3/model/rest"
+	"github.com/netcracker/qubership-core-lib-go/v3/utils"
 )
 
 type ArangoDbClient interface {
@@ -40,7 +40,7 @@ func (a *ArangoDbClientImpl) GetArangoDatabase(ctx context.Context, dbId string)
 		return nil, err
 	}
 	cachedClient := rawCachedClient.(*cachedArangoClient)
-	db, err := cachedClient.arangoClient.Database(ctx, cachedClient.dbName)
+	db, err := cachedClient.arangoClient.GetDatabase(ctx, cachedClient.dbName, nil)
 
 	if shared.IsNoLeader(err) {
 		logger.ErrorC(ctx, "can't connect to arango database: %s", err)
@@ -53,7 +53,7 @@ func (a *ArangoDbClientImpl) GetArangoDatabase(ctx context.Context, dbId string)
 		if err != nil {
 			return nil, err
 		}
-		db, err = cachedClient.arangoClient.Database(ctx, cachedClient.dbName)
+		db, err = cachedClient.arangoClient.GetDatabase(ctx, cachedClient.dbName, nil)
 	}
 
 	return db, err
