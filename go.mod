@@ -5,8 +5,8 @@ go 1.25.3
 require (
 	github.com/arangodb/go-driver/v2 v2.1.5
 	github.com/docker/go-connections v0.6.0
-	github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3 v3.0.3
-	github.com/netcracker/qubership-core-lib-go/v3 v3.1.1
+	github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3 v3.0.4
+	github.com/netcracker/qubership-core-lib-go/v3 v3.2.0
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.39.0
 )
