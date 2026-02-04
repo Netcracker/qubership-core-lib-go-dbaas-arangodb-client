@@ -1,6 +1,6 @@
 module github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/v4
 
-go 1.25.6
+go 1.25.7
 
 require (
 	github.com/arangodb/go-driver/v2 v2.1.6
