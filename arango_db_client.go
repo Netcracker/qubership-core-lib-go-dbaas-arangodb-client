@@ -42,9 +42,23 @@ func (a *ArangoDbClientImpl) GetArangoDatabase(ctx context.Context, dbId string)
 	cachedClient := rawCachedClient.(*cachedArangoClient)
 	db, err := cachedClient.arangoClient.GetDatabase(ctx, cachedClient.dbName, nil)
 
-	if shared.IsNoLeader(err) {
-		logger.ErrorC(ctx, "can't connect to arango database: %s", err)
-		return nil, err
+	var validateErr error = nil
+	if db != nil && err == nil {
+		validateErr = db.ValidateQuery(ctx, "RETURN 42")
+	}
+	if shared.IsNoLeaderOrOngoing(err) || shared.IsNoLeaderOrOngoing(validateErr) {
+		logger.WarnC(ctx, "leader switch detected, connection will be recreated")
+		a.arangodbCache.Delete(key)
+		rawCachedClient, err = a.arangodbCache.Cache(key, a.createNewArangoClient(ctx, classifier))
+		if err != nil {
+			logger.ErrorC(ctx, "failed to recreate connection: %v", err)
+			return nil, err
+		}
+		db, err = cachedClient.arangoClient.GetDatabase(ctx, cachedClient.dbName, nil)
+		if err != nil {
+			logger.ErrorC(ctx, "failed to create db via new connection: %v", err)
+			return nil, err
+		}
 	}
 
 	if shared.IsUnauthorized(err) {

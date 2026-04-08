@@ -4,13 +4,16 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/arangodb/go-driver/v2/arangodb"
+	"github.com/arangodb/go-driver/v2/arangodb/shared"
 	"github.com/arangodb/go-driver/v2/connection"
 	"github.com/docker/go-connections/nat"
+	"github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/v4/mocks"
 	"github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/v4/model"
 	dbaasbase "github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3"
 	"github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3/cache"
@@ -85,6 +88,91 @@ func (suite *ArangoDbClientTestSuite) TestGetDifferentDatabases() {
 	firstDatabase := suite.checkDatabaseConnection(ctx, "1")
 	secondDatabase := suite.checkDatabaseConnection(ctx, "2")
 	assert.NotEqual(suite.T(), firstDatabase.Name(), secondDatabase.Name())
+}
+
+func (suite *MockArangoDbClientTestSuite) TestGetDatabase_WithNoLeaderError() {
+	key1 := cache.Key{
+		DbType:     "arangodb",
+		Classifier: "{\"dbId\":\"1\",\"microserviceName\":\"test_service\",\"namespace\":\"test_space\",\"scope\":\"service\"}",
+	}
+
+	ctx := context.Background()
+	dbName := "db-name"
+
+	mockArangoClient := mocks.NewMockClient(suite.T())
+	mockArangoClient.EXPECT().GetDatabase(ctx, dbName, (*arangodb.GetDatabaseOptions)(nil)).
+		Return(nil, shared.ArangoError{
+			HasError:     true,
+			Code:         http.StatusServiceUnavailable,
+			ErrorNum:     shared.ErrClusterNotLeader,
+			ErrorMessage: "Arango needs a hero",
+		}).Times(1)
+	mockArangoClient.EXPECT().GetDatabase(ctx, dbName, (*arangodb.GetDatabaseOptions)(nil)).
+		Return(mocks.NewMockDatabase(suite.T()), nil).Times(1)
+
+	dbcache := map[cache.Key]interface{}{
+		key1: &cachedArangoClient{
+			arangoClient: mockArangoClient,
+			dbName:       dbName,
+		},
+	}
+
+	dbaasCache := cache.DbaaSCache{LogicalDbCache: dbcache}
+
+	arangoDbClient := &ArangoDbClientImpl{
+		httpConfig:    &connection.HttpConfiguration{},
+		dbaasClient:   &MockDbaasClient{},
+		arangodbCache: &dbaasCache,
+		params:        model.DbParams{Classifier: ServiceClassifier},
+	}
+
+	db, err := arangoDbClient.GetArangoDatabase(ctx, "1")
+	assert.Nil(suite.T(), err)
+	assert.NotNil(suite.T(), db)
+}
+
+func (suite *MockArangoDbClientTestSuite) TestGetDatabase_WithNoLeaderError_DuringEngineCheck() {
+	key1 := cache.Key{
+		DbType:     "arangodb",
+		Classifier: "{\"dbId\":\"1\",\"microserviceName\":\"test_service\",\"namespace\":\"test_space\",\"scope\":\"service\"}",
+	}
+
+	ctx := context.Background()
+	dbName := "db-name"
+
+	mockArangoClient := mocks.NewMockClient(suite.T())
+	database := mocks.NewMockDatabase(suite.T())
+	mockArangoClient.EXPECT().GetDatabase(ctx, dbName, (*arangodb.GetDatabaseOptions)(nil)).
+		Return(database, nil).Times(1)
+	database.EXPECT().ValidateQuery(ctx, "RETURN 42").
+		Return(shared.ArangoError{
+			HasError:     true,
+			Code:         http.StatusServiceUnavailable,
+			ErrorNum:     shared.ErrClusterNotLeader,
+			ErrorMessage: "Arango needs a hero",
+		}).Times(1)
+	mockArangoClient.EXPECT().GetDatabase(ctx, dbName, (*arangodb.GetDatabaseOptions)(nil)).
+		Return(mocks.NewMockDatabase(suite.T()), nil).Times(1)
+
+	dbcache := map[cache.Key]interface{}{
+		key1: &cachedArangoClient{
+			arangoClient: mockArangoClient,
+			dbName:       dbName,
+		},
+	}
+
+	dbaasCache := cache.DbaaSCache{LogicalDbCache: dbcache}
+
+	arangoDbClient := &ArangoDbClientImpl{
+		httpConfig:    &connection.HttpConfiguration{},
+		dbaasClient:   &MockDbaasClient{},
+		arangodbCache: &dbaasCache,
+		params:        model.DbParams{Classifier: ServiceClassifier},
+	}
+
+	db, err := arangoDbClient.GetArangoDatabase(ctx, "1")
+	assert.Nil(suite.T(), err)
+	assert.NotNil(suite.T(), db)
 }
 
 func (suite *ArangoDbClientTestSuite) checkDatabaseConnection(ctx context.Context, dbName string) arangodb.Database {
@@ -286,8 +374,25 @@ func (p TestLogicalDbProvider) getConnectionProperties(classifier map[string]int
 	return connectionProperties
 }
 
-//go:generate mockery --with-expecter --srcpkg github.com/arangodb/go-driver/v2/arangodb --name=Client --output mocks --filename arangodb_driver_client.go
-//go:generate mockery --with-expecter --srcpkg github.com/arangodb/go-driver/v2/arangodb --name=Database --output mocks --filename arangodb_driver_database.go
+type MockDbaasClient struct {
+}
+
+func (p *MockDbaasClient) GetOrCreateDb(ctx context.Context, dbType string, classifier map[string]interface{}, params rest.BaseDbParams) (*basemodel.LogicalDb, error) {
+	logicalDB := basemodel.LogicalDb{}
+	conProp := make(map[string]interface{})
+	conProp["dbName"] = "1"
+	conProp["host"] = "2"
+	conProp["port"] = 3.0
+	conProp["username"] = "4"
+	conProp["password"] = "5"
+	logicalDB.ConnectionProperties = conProp
+	return &logicalDB, nil
+}
+
+func (p *MockDbaasClient) GetConnection(ctx context.Context, dbType string, classifier map[string]interface{}, params rest.BaseDbParams) (map[string]interface{}, error) {
+	return nil, nil
+}
+
 type MockArangoDbClientTestSuite struct {
 	suite.Suite
 }
