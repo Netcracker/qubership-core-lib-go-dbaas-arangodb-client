@@ -1,0 +1,16 @@
+all: false
+force-file-write: true
+generate: true
+
+dir: 'mocks'
+pkgname: 'mocks'
+
+packages:
+  github.com/arangodb/go-driver/v2/arangodb:
+    interfaces:
+      Client:
+        config:
+          filename: arangodb_driver_client.go
+      Database:
+        config:
+          filename: arangodb_driver_database.go
