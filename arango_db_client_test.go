@@ -262,14 +262,14 @@ func (suite *ArangoDbClientTestSuite) prepareTestContainer(ctx context.Context) 
 	if err != nil {
 		suite.T().Fatal(err)
 	}
-	arangoDBPort, err := suite.arangoDBContainer.MappedPort(ctx, string(arangoDBNatPort))
+	arangoDBPort, err := suite.arangoDBContainer.MappedPort(ctx, arangoDBNatPort)
 	if err != nil {
 		suite.T().Fatal(err)
 	}
 
 	suite.arangoDBHost = arangoDBHost
-	suite.arangoDBPort = float64(arangoDBPort.Num())
-	suite.rootClient = getRootClient(arangoDBHost, int(arangoDBPort.Num()))
+	suite.arangoDBPort = float64(arangoDBPort.Int())
+	suite.rootClient = getRootClient(arangoDBHost, arangoDBPort.Int())
 
 	os.Unsetenv("TESTCONTAINERS_RYUK_DISABLED")
 }
@@ -284,11 +284,11 @@ func (c arangoDBWaitStrategy) WaitUntilReady(ctx context.Context, target wait.St
 	if err != nil {
 		return
 	}
-	port, err := target.MappedPort(ctx, string(arangoDBNatPort))
+	port, err := target.MappedPort(ctx, arangoDBNatPort)
 	if err != nil {
 		return
 	}
-	return waitForArangoDBStart(ctx, c.waitDuration, c.checkInterval, host, int(port.Num()))
+	return waitForArangoDBStart(ctx, c.waitDuration, c.checkInterval, host, port.Int())
 }
 
 func NewArangoDBWaitStrategy(waitDuration time.Duration, checkInterval time.Duration) *arangoDBWaitStrategy {
