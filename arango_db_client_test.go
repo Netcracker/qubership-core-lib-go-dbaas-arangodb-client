@@ -12,7 +12,6 @@ import (
 	"github.com/arangodb/go-driver/v2/arangodb"
 	"github.com/arangodb/go-driver/v2/arangodb/shared"
 	"github.com/arangodb/go-driver/v2/connection"
-	"github.com/docker/go-connections/nat"
 	"github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/v4/mocks"
 	"github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/v4/model"
 	dbaasbase "github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3"
@@ -37,9 +36,6 @@ const (
 	arangoDBInitFileLocation = "/docker-entrypoint-initdb.d/init.js"
 )
 
-var (
-	arangoDBNatPort, _ = nat.NewPort("tcp", arangoDBPort)
-)
 
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(ArangoDbClientTestSuite))
@@ -239,7 +235,7 @@ func (suite *ArangoDbClientTestSuite) prepareTestContainer(ctx context.Context) 
 
 	req := testcontainers.ContainerRequest{
 		Image:        arangoDBImage,
-		ExposedPorts: []string{arangoDBNatPort.Port()},
+		ExposedPorts: []string{arangoDBPort},
 		WaitingFor:   NewArangoDBWaitStrategy(time.Minute, time.Second),
 		Mounts: testcontainers.Mounts(
 			testcontainers.BindMount(arangoDBInitFile.Name(), arangoDBInitFileLocation),
@@ -262,14 +258,14 @@ func (suite *ArangoDbClientTestSuite) prepareTestContainer(ctx context.Context) 
 	if err != nil {
 		suite.T().Fatal(err)
 	}
-	arangoDBPort, err := suite.arangoDBContainer.MappedPort(ctx, arangoDBNatPort)
+	mappedPort, err := suite.arangoDBContainer.MappedPort(ctx, arangoDBPort)
 	if err != nil {
 		suite.T().Fatal(err)
 	}
 
 	suite.arangoDBHost = arangoDBHost
-	suite.arangoDBPort = float64(arangoDBPort.Int())
-	suite.rootClient = getRootClient(arangoDBHost, arangoDBPort.Int())
+	suite.arangoDBPort = float64(mappedPort.Num())
+	suite.rootClient = getRootClient(arangoDBHost, int(mappedPort.Num()))
 
 	os.Unsetenv("TESTCONTAINERS_RYUK_DISABLED")
 }
@@ -284,11 +280,11 @@ func (c arangoDBWaitStrategy) WaitUntilReady(ctx context.Context, target wait.St
 	if err != nil {
 		return
 	}
-	port, err := target.MappedPort(ctx, arangoDBNatPort)
+	port, err := target.MappedPort(ctx, arangoDBPort)
 	if err != nil {
 		return
 	}
-	return waitForArangoDBStart(ctx, c.waitDuration, c.checkInterval, host, port.Int())
+	return waitForArangoDBStart(ctx, c.waitDuration, c.checkInterval, host, int(port.Num()))
 }
 
 func NewArangoDBWaitStrategy(waitDuration time.Duration, checkInterval time.Duration) *arangoDBWaitStrategy {
