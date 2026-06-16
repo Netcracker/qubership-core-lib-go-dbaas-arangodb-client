@@ -1,9 +1,7 @@
-all: false
-force-file-write: true
-generate: true
+with-expecter: true
 
 dir: 'mocks'
-pkgname: 'mocks'
+outpkg: 'mocks'
 
 packages:
   github.com/arangodb/go-driver/v2/arangodb:

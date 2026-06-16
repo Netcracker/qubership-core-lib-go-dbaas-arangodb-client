@@ -3,8 +3,7 @@ module github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/v4
 go 1.26.4
 
 require (
-	github.com/arangodb/go-driver/v2 v2.2.0
-	github.com/docker/go-connections v0.7.0
+	github.com/arangodb/go-driver/v2 v2.3.1
 	github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3 v3.5.0
 	github.com/netcracker/qubership-core-lib-go/v3 v3.11.0
 	github.com/stretchr/testify v1.11.1
@@ -26,6 +25,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dchest/siphash v1.2.3 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
+	github.com/docker/go-connections v0.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/ebitengine/purego v0.10.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
