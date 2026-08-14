@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	github.com/arangodb/go-driver/v2 v2.3.1
-	github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3 v3.6.0
+	github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3 v3.7.0
 	github.com/netcracker/qubership-core-lib-go/v3 v3.13.2
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.43.0
