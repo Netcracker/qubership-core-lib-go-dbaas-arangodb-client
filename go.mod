@@ -3,7 +3,7 @@ module github.com/netcracker/qubership-core-lib-go-dbaas-arangodb-client/v4
 go 1.26.5
 
 require (
-	github.com/arangodb/go-driver/v2 v2.3.1
+	github.com/arangodb/go-driver/v2 v2.4.1
 	github.com/netcracker/qubership-core-lib-go-dbaas-base-client/v3 v3.7.2
 	github.com/netcracker/qubership-core-lib-go/v3 v3.14.1
 	github.com/stretchr/testify v1.12.1
